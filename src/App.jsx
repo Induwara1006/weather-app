@@ -91,14 +91,7 @@ export default function App() {
             </>
           )}
 
-          <div className="card note">
-            <div>Notes for interviewers:</div>
-            <ul>
-              <li>Components + hooks + derived state + async fetching.</li>
-              <li>No API key required.</li>
-              <li>Unit conversions done client-side.</li>
-            </ul>
-          </div>
+          
         </div>
       </div>
     </div>
