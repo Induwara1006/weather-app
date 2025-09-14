@@ -16,7 +16,8 @@ export default function CurrentWeather({ place, current, unit }) {
         <div className="pill">{meta.emoji}</div>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: "repeat(4,1fr)", marginTop: 12 }}>
+     <div className="metrics" style={{ marginTop: 12 }}>
+
         <div>
           <div className="sub">Temperature</div>
           <div className="kpi">{formatTemp(current.temperature_2m, unit)}</div>

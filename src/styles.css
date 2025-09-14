@@ -66,3 +66,39 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, Arial, sans-serif; }
 }
 
 .note ul { margin: 6px 0 0; padding-left: 18px; }
+
+
+/* --- Mobile-first tweaks --- */
+.title { font-size: 26px; }
+.kpi { font-size: 32px; }
+
+/* metric grid & forecast adapt by screen size */
+.metrics { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+.forecast { grid-template-columns: repeat(2, minmax(0,1fr)); }
+
+/* stack search bar on phones */
+.searchbar { flex-direction: column; align-items: stretch; }
+.searchbar .button { width: 100%; }
+.searchbar .input { width: 100%; }
+
+/* tighten card paddings on very small screens */
+@media (max-width: 380px) {
+  .card { padding: 12px; }
+  .kpi { font-size: 28px; }
+}
+
+/* --- Tablet (≥481px) --- */
+@media (min-width: 481px) and (max-width: 900px) {
+  .title { font-size: 28px; }
+  .kpi { font-size: 34px; }
+  .metrics { grid-template-columns: repeat(3, 1fr); }
+  .forecast { grid-template-columns: repeat(4, minmax(0,1fr)); }
+}
+
+/* --- Desktop (≥901px) --- */
+@media (min-width: 901px) {
+  .title { font-size: 28px; }
+  .kpi { font-size: 36px; }
+  .metrics { grid-template-columns: repeat(4, 1fr); }
+  .forecast { grid-template-columns: repeat(7, minmax(0,1fr)); }
+}
