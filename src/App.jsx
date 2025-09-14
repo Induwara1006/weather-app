@@ -3,6 +3,7 @@ import SearchBar from "./components/SearchBar.jsx";
 import UnitToggle from "./components/UnitToggle.jsx";
 import CurrentWeather from "./components/CurrentWeather.jsx";
 import Forecast from "./components/Forecast.jsx";
+import ThemeToggle from "./components/ThemeToggle.jsx";
 import { cToF } from "./utils/conversions.js";
 import { geocodeCity, fetchForecast } from "./services/weather.js";
 
@@ -15,6 +16,14 @@ export default function App() {
   const [current, setCurrent] = useState(null);
   const [daily, setDaily] = useState(null);
 
+  // Theme state (persisted)
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  // Derived display data (unit conversion)
   const currentDisplay = useMemo(() => {
     if (!current) return null;
     if (unit === "C") return current;
@@ -35,6 +44,7 @@ export default function App() {
     };
   }, [daily, unit]);
 
+  // Search flow
   const search = async () => {
     if (!query.trim()) return;
     setIsLoading(true);
@@ -61,6 +71,7 @@ export default function App() {
     }
   };
 
+  // Initial load
   useEffect(() => {
     search();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,11 +82,19 @@ export default function App() {
       <div className="container">
         <div className="row mb">
           <h1 className="title">Weather App ✨</h1>
-          <span className="pill">Open-Meteo API</span>
+          <div className="row" style={{ gap: 8 }}>
+            <span className="pill">Open-Meteo API</span>
+            <ThemeToggle theme={theme} setTheme={setTheme} />
+          </div>
         </div>
 
         <div className="grid">
-          <SearchBar query={query} setQuery={setQuery} onSearch={search} isLoading={isLoading} />
+          <SearchBar
+            query={query}
+            setQuery={setQuery}
+            onSearch={search}
+            isLoading={isLoading}
+          />
           <UnitToggle unit={unit} setUnit={setUnit} />
 
           {error && (
@@ -90,8 +109,6 @@ export default function App() {
               <Forecast daily={dailyDisplay} unit={unit} />
             </>
           )}
-
-          
         </div>
       </div>
     </div>
