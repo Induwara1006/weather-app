@@ -11,6 +11,7 @@ export default function Forecast({ daily, unit }) {
     tmax: daily.temperature_2m_max[i],
     code: daily.weather_code[i],
     precip: daily.precipitation_sum[i],
+    precipProb: daily.precipitation_probability_max?.[i] || 0,
   }));
 
   const fmtDay = (dt) => dt.toLocaleDateString(undefined, { weekday: "short" });
@@ -31,7 +32,16 @@ export default function Forecast({ daily, unit }) {
               <div style={{ marginTop: 6, fontWeight: 600 }}>
                 {formatTemp(d.tmax, unit)} <span style={{ opacity: 0.7 }}>/ {formatTemp(d.tmin, unit)}</span>
               </div>
-              <div style={{ marginTop: 6, fontSize: 12, opacity: 0.85 }}>💧 {Math.round(d.precip)} mm</div>
+              {d.precipProb > 0 && (
+                <div style={{ marginTop: 4, fontSize: 11, opacity: 0.85 }}>
+                  💧 {d.precipProb}%
+                </div>
+              )}
+              {d.precip > 0 && (
+                <div style={{ marginTop: 2, fontSize: 11, opacity: 0.75 }}>
+                  {Math.round(d.precip)} mm
+                </div>
+              )}
             </div>
           );
         })}

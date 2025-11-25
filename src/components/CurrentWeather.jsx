@@ -34,6 +34,12 @@ export default function CurrentWeather({ place, current, unit }) {
           <div className="sub">Humidity</div>
           <div className="kpi">{Math.round(current.relative_humidity_2m)}%</div>
         </div>
+        {current.precipitation > 0 && (
+          <div>
+            <div className="sub">Precipitation</div>
+            <div className="kpi">{Math.round(current.precipitation)} mm</div>
+          </div>
+        )}
       </div>
     </div>
   );

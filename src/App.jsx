@@ -4,8 +4,15 @@ import UnitToggle from "./components/UnitToggle.jsx";
 import CurrentWeather from "./components/CurrentWeather.jsx";
 import Forecast from "./components/Forecast.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
+import HourlyForecast from "./components/HourlyForecast.jsx";
+import AirQuality from "./components/AirQuality.jsx";
+import WeatherDetails from "./components/WeatherDetails.jsx";
+import WeatherAlerts from "./components/WeatherAlerts.jsx";
+import SavedLocations from "./components/SavedLocations.jsx";
+import LocationButton from "./components/LocationButton.jsx";
+import WeatherChart from "./components/WeatherChart.jsx";
 import { cToF } from "./utils/conversions.js";
-import { geocodeCity, fetchForecast } from "./services/weather.js";
+import { geocodeCity, fetchForecast, fetchAirQuality } from "./services/weather.js";
 
 export default function App() {
   const [query, setQuery] = useState("Colombo");
@@ -15,6 +22,9 @@ export default function App() {
   const [place, setPlace] = useState("");
   const [current, setCurrent] = useState(null);
   const [daily, setDaily] = useState(null);
+  const [hourly, setHourly] = useState(null);
+  const [airQuality, setAirQuality] = useState(null);
+  const [coords, setCoords] = useState(null);
 
   // Theme state (persisted)
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
@@ -45,30 +55,69 @@ export default function App() {
   }, [daily, unit]);
 
   // Search flow
-  const search = async () => {
-    if (!query.trim()) return;
+  const search = async (cityQuery = query) => {
+    if (!cityQuery.trim()) return;
     setIsLoading(true);
     setError("");
     try {
-      const g = await geocodeCity(query);
+      const g = await geocodeCity(cityQuery);
       if (!g) throw new Error("City not found. Try another search.");
 
       const { latitude, longitude, name, country, admin1, timezone } = g;
       const display = [name, admin1, country].filter(Boolean).join(", ");
 
       const w = await fetchForecast({ latitude, longitude, timezone });
+      const aq = await fetchAirQuality({ latitude, longitude });
+      
       setPlace(display);
       setCurrent(w.current);
       setDaily(w.daily);
+      setHourly(w.hourly);
+      setAirQuality(aq);
+      setCoords({ latitude, longitude });
     } catch (e) {
       console.error(e);
       setError(e.message || "Something went wrong.");
       setPlace("");
       setCurrent(null);
       setDaily(null);
+      setHourly(null);
+      setAirQuality(null);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Geolocation
+  const useMyLocation = () => {
+    setIsLoading(true);
+    setError("");
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const w = await fetchForecast({ latitude, longitude, timezone: "auto" });
+          const aq = await fetchAirQuality({ latitude, longitude });
+          
+          setPlace("Your Location");
+          setCurrent(w.current);
+          setDaily(w.daily);
+          setHourly(w.hourly);
+          setAirQuality(aq);
+          setCoords({ latitude, longitude });
+        } catch (e) {
+          console.error(e);
+          setError(e.message || "Failed to fetch weather for your location.");
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      (err) => {
+        console.error(err);
+        setError("Unable to access your location. Please enable location services.");
+        setIsLoading(false);
+      }
+    );
   };
 
   // Initial load
@@ -89,12 +138,16 @@ export default function App() {
         </div>
 
         <div className="grid">
-          <SearchBar
-            query={query}
-            setQuery={setQuery}
-            onSearch={search}
-            isLoading={isLoading}
-          />
+          <div className="row searchbar" style={{ gap: 8 }}>
+            <SearchBar
+              query={query}
+              setQuery={setQuery}
+              onSearch={() => search()}
+              isLoading={isLoading}
+            />
+            <LocationButton onGetLocation={useMyLocation} isLoading={isLoading} />
+          </div>
+
           <UnitToggle unit={unit} setUnit={setUnit} />
 
           {error && (
@@ -105,8 +158,14 @@ export default function App() {
 
           {!error && (
             <>
+              <SavedLocations onSelectLocation={(loc) => search(loc)} />
+              <WeatherAlerts daily={daily} />
               <CurrentWeather place={place} current={currentDisplay} unit={unit} />
+              <HourlyForecast hourly={hourly} unit={unit} />
+              <WeatherChart daily={dailyDisplay} unit={unit} />
               <Forecast daily={dailyDisplay} unit={unit} />
+              <WeatherDetails current={current} daily={daily} />
+              <AirQuality airQuality={airQuality} />
             </>
           )}
         </div>
